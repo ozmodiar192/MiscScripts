@@ -6,7 +6,7 @@ if ps -eo pcpu,pid,args | sort -k 1 -n -r | tr -s " " | head -n 2 | sed '1d' | g
 		ps -eLo pid,lwp,nlwp,ruser,pcpu,stime,etime | grep `ps -eo pcpu,pid | sort -k 1 -n -r | tr -s " " | sed 's/^ *//' | head -n 2 | sed '1d' | cut -d " " -f 2` | tr -s " " | sort -k 5 -n -r | awk '{print $2, $5}' | grep -v " 0.0"
 		printf "\n\nHere are the converted Hex IDs of the threads using CPU, sorted by cpu utilization. Find them in the thread dump below as \"nid\" to identify problematic processes: \n"
 		#create an array of thread IDs in decimal
-		topthreads=( $(ps -eLo pid,lwp,nlwp,ruser,pcpu,stime,etime | grep `ps -eo pcpu,pid | sort -n -k 1 -r | sed 's/^ *//' | tr -s " " | head -n 2 | sed '1d' | cut -d " " -f 2` | tr -s " " | sort -n -k 5 -r | grep -v " 0.0"| awk '{print $2}' ) )
+		topthreads=$(ps -eLo pid,lwp,nlwp,ruser,pcpu,stime,etime | grep `ps -eo pcpu,pid | sort -n -k 1 -r | sed 's/^ *//' | tr -s " " | head -n 2 | sed '1d' | cut -d " " -f 2` | tr -s " " | sort -n -k 5 -r | grep -v " 0.0"| awk '{print $2}' )
 		#Iterate through the array and output the value as hex.
 		printf '%x\n' ${topthreads[@]}
 		# get the path to jstack, (assumes it's in the bin folder of the JDK that launched the process), the pid of the java process with the highest utilization, and the user it's running as.
@@ -17,5 +17,5 @@ if ps -eo pcpu,pid,args | sort -k 1 -n -r | tr -s " " | head -n 2 | sed '1d' | g
 		su - ${javauser} -c "${javabin}/jstack -l ${javapid}"
 	else
 		topproc=$(ps -eo pcpu,pid,args | sort -k 1 -n -r | tr -s " " | sed 's/^ *//' | head -n 2 | sed '1d') 
-		echo "top utilization process is ${topproc}"
+		printf "top utilization process is \n ${topproc} \n"
 fi
