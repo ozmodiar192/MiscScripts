@@ -4,20 +4,12 @@ import java.io.IOException
 import java.io.Writer
 
 print 'CREATE PATHS';
-domain_name=os.getenv('DOMAIN_NAME');
-java_home=os.getenv('JAVA_HOME');
-middleware_home=os.getenv('MIDDLEWARE_HOME');
-weblogic_home=os.getenv('WEBLOGIC_HOME');
-print weblogic_home
-domain_home=os.getenv('DOMAIN_HOME');
-node_manager_home=os.getenv('NODEMANAGER_HOME');
-weblogic_template=weblogic_home + '/common/templates/wls/wls.jar';
-admin_server_url = 't3://' + admin_server_listen_address + ':' + admin_server_listen_port;
- 
-print 'READING DOMAIN';
+domain_home=/path/to/your/domain/home
+
+print 'Open Domain';
 readDomain(domain_home);
 
-envcsv = open('/opt/app/src/scripts/datasources.csv')
+envcsv = open('/path/to/datasources.csv')
 # skip the header row ya'll
 # create some empty dictionaries.  The first is to create the machines, the second to create the instances, and the third to populate the JVM args.
 datasources={}
