@@ -10,7 +10,6 @@ print 'Open Domain';
 readDomain(domain_home);
 
 envcsv = open('/path/to/datasources.csv')
-# skip the header row ya'll
 # create some empty dictionaries.  The first is to create the machines, the second to create the instances, and the third to populate the JVM args.
 datasources={}
 instances={}
@@ -36,18 +35,12 @@ for row in envcsv:
 		datasources.setdefault(dsname, []).append(password) 
 		datasources.setdefault(dsname, []).append(targets) 
 		datasources.setdefault(dsname, []).append(onsnodes) 
-print(datasources)
 
 #convert dicts to lists of tuples for easier iteration
 wldatasources = datasources.items()
-#wlinstances = instances.items()
-#wljvmargs = args.items()
-#
-##Create the machines
 for dsname,(dburl, user, password, targets, onsnodes) in wldatasources:
 	print("creating " + dsname + " with url " + dburl + " and username " + user + " on targets " + targets) 
 	cd('/')
-
 	print("create datasource")
 	create(dsname,'JDBCSystemResource')
 	
@@ -80,21 +73,24 @@ for dsname,(dburl, user, password, targets, onsnodes) in wldatasources:
 	cd('JDBCConnectionPoolParams/NO_NAME_0')
 	set('TestTableName','SQL SELECT 1 FROM DUAL')
 
-	print("Create JDBCOracleParams and set ONS settings")
-	cd('/JDBCSystemResource/' + dsname + '/JdbcResource/' + dsname)
-	create('oracleParams','JDBCOracleParams')
-	cd('JDBCOracleParams/NO_NAME_0')
-	set('FanEnabled','true')                                                                                                                                                                                                                            
-        set('OnsWalletFile','')                                                                                                                                                                                                                             
-        set('ActiveGridlink','true')                                                                                                                                                                                                                        
-        onsnodelist=onsnodes.replace(' ',',')                                                                                                                                                                                                               
-	print("Setting ONS Nodes to " + onsnodelist)
-        set('OnsNodeList', java.lang.String(onsnodelist))
+#We are going to assume that if you didn't set up ONS nodes, you want to create a standalone, non-gridlink datasource
+	if onsnodes != "":
+		print("Create JDBCOracleParams and set ONS settings")
+		cd('/JDBCSystemResource/' + dsname + '/JdbcResource/' + dsname)
+		create('oracleParams','JDBCOracleParams')
+		cd('JDBCOracleParams/NO_NAME_0')
+		set('FanEnabled','true')                                                                                                                                                                                                                            
+        	set('OnsWalletFile','')                                                                                                                                                                                                                             
+        	set('ActiveGridlink','true')                                                                                                                                                                                                                        
+        	onsnodelist=onsnodes.replace(' ',',')                                                                                                                                                                                                               
+		print("Setting ONS Nodes to " + onsnodelist)
+        	set('OnsNodeList', java.lang.String(onsnodelist))
+	else:
+		print "You did not define ONS Nodes, so assuming this is not a GridLink Datasource"
 
-	print("Set Targets to " + targets)
+
 	cd('/JDBCSystemResources/' + dsname)
 	targetlist = targets.replace(' ',',')
-	print("coverted " + targets + " to " + targetlist)
 	#set('Targets',jarray.array([ObjectName('com.bea:Name=' + targetlist + ',Type=Server')], ObjectName))
 	set('Target', java.lang.String(targetlist))
 
