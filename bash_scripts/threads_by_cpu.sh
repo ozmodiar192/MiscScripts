@@ -1,11 +1,20 @@
 #!/bin/bash
 
 #ps with no headers and the cpu, pid, and args fields, trim extra spaces, trim leading spaces, sort numerically reverse, cut to the appropriate field, show only the first line.
-topprocpid=`ps --no-headers -eo pcpu,pid,args | tr -s " " | sed 's/^ *//g' |  sort -n -r | cut -d' ' -f2 | head -1`
-topprocname=`ps --no-headers -eo pcpu,pid,args | tr -s " " | sed 's/^ *//g' |  sort -n -r | cut -d' ' -f3 | head -1`
+if [ -z "$1" ]
+  then
+	printf "No PID was provided, finding the top utilizing process \n"
+        topprocpid=`ps --no-headers -eo pcpu,pid,args | tr -s " " | sed 's/^ *//g' |  sort -n -r | cut -d' ' -f2 | head -1`
+        topprocname=`ps --no-headers -eo pcpu,pid,args | tr -s " " | sed 's/^ *//g' |  sort -n -r | cut -d' ' -f3 | head -1`
+        topprocutil=`ps --no-headers -eo pcpu,pid,args | tr -s " " | sed 's/^ *//g' |  sort -n -r | cut -d' ' -f1 | head -1`
+  else
+        topprocpid=$1
+        topprocname=`ps --no-headers -eo pcpu,pid,args | grep $1 | grep -v grep | tr -s " " | sed 's/^ *//g' | cut -d' ' -f3`
+        topprocutil=`ps --no-headers -eo pcpu,pid,args | grep $1 | grep -v grep | tr -s " " | sed 's/^ *//g' | cut -d' ' -f1`
+fi
 if echo $topprocname | grep -q java;
         then
-                echo "Top proc is Java, and it's pid is $topprocpid"
+                echo "The Java process ${topprocname} with PID ${topprocpid} is using ${topprocutil}% of the CPU.  Dumping utilization of individual threads."
                 # Store the lwps in an array, store the cpu utilization in an array, and then convert the lwps to hex and store the new values in an array
                 lwps=($(ps -eLo pid,lwp,nlwp,ruser,pcpu,stime,etime | grep $topprocpid | tr -s " " | sed 's/^ *//g' | sort -k 5 -n -r | awk '{print $2, $5}' | grep -v "0.0" | awk '{print $1}'))
                 cpu=($(ps -eLo pid,lwp,nlwp,ruser,pcpu,stime,etime | grep $topprocpid | tr -s " " | sed 's/^ *//g' | sort -k 5 -n -r | awk '{print $2, $5}' | grep -v "0.0" | awk '{print $2}'))
@@ -22,5 +31,5 @@ if echo $topprocname | grep -q java;
                 printf "\n Attempting to dump PID ${topprocpid} using jstack in ${javabin} as user ${javauser} \n\n"
                 su - ${javauser} -c "${javabin}/jstack -l ${topprocpid}"
         else
-                echo "Top process is not Java, it is $topprocname"
+                echo "${topprocpid} is not Java, it is $topprocname, and it's using $topprocutil% CPU"
 fi
