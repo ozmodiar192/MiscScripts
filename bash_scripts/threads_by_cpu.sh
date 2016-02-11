@@ -9,8 +9,8 @@ if [ -z "$1" ]
         topprocutil=`ps --no-headers -eo pcpu,pid,args | tr -s " " | sed 's/^ *//g' |  sort -n -r | cut -d' ' -f1 | head -1`
   else
         topprocpid=$1
-        topprocname=`ps --no-headers -eo pcpu,pid,args | grep $1 | grep -v grep | tr -s " " | sed 's/^ *//g' | cut -d' ' -f3`
-        topprocutil=`ps --no-headers -eo pcpu,pid,args | grep $1 | grep -v grep | tr -s " " | sed 's/^ *//g' | cut -d' ' -f1`
+        topprocname=`ps --no-headers -eo pcpu,pid,args | grep $1 | grep -v grep | grep -v $0 | tr -s " " | sed 's/^ *//g' | cut -d' ' -f3`
+        topprocutil=`ps --no-headers -eo pcpu,pid,args | grep $1 | grep -v grep | grep -v $0 | tr -s " " | sed 's/^ *//g' | cut -d' ' -f1`
 fi
 if echo $topprocname | grep -q java;
         then
@@ -26,8 +26,8 @@ if echo $topprocname | grep -q java;
                         i=$(( $i + 1));
                         done
                 #Try to find jstack from the process arguments and take a thread dump.  This is a best-effort kind of deal, obviously won't work in implementations that don't have jstack, like Websphere.
-                javabin=$(ps -eo pid,args | grep ${topprocpid} | grep -v grep | tr -s " " | sed 's/^ *//' | cut -d " " -f 2 | rev | cut -d "/" -f2- | rev)
-                javauser=$(ps -eo pid,user | grep ${topprocpid} | grep -v grep | sed 's/^ *//' | cut -d " " -f 2)
+                javabin=$(ps -eo pid,args | grep ${topprocpid} | grep -v grep | grep -v $0 |  tr -s " " | sed 's/^ *//' | cut -d " " -f 2 | rev | cut -d "/" -f2- | rev)
+                javauser=$(ps -eo pid,user | grep ${topprocpid} | grep -v grep | grep -v $0 | sed 's/^ *//' | cut -d " " -f 2)
                 printf "\n Attempting to dump PID ${topprocpid} using jstack in ${javabin} as user ${javauser} \n\n"
                 su - ${javauser} -c "${javabin}/jstack -l ${topprocpid}"
         else
