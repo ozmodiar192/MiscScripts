@@ -60,7 +60,7 @@ def flagchecker ( key,value ):
 #This function takes a string of JVM arguments, compares them to the existing arguments on a server, and returns an updated string containing updated vlues for existing args, unchanged arguments from the existing server, and any new args.
 def genargs ( newargs, server ):
     try:
-        cd('/Servers/' + currentserver)
+        cd('/Servers/' + server)
         # Get the arguments from Weblogic with this command.
         currentargs = cmo.getServerStart().getArguments()
         # Create a list of new and existing JVM args by splitting the strings.
