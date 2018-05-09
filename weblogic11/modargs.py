@@ -6,15 +6,16 @@ domain_name='mydomain'
 java_home='/path/to/java/home'
 middleware_home='/opt/app/weblogic'
 weblogic_home='/opt/app/weblogic/wlserver'
-domain_home='/opt/app/weblogic/domains/mydomain'
+domain_home='/opt/app/weblogic/atg/domains/mydomain'
 node_manager_home='/opt/app/weblogic/oracle_common/common/nodemanager'
 weblogic_template=weblogic_home + '/common/templates/wls/wls.jar'
 admin_server_url = 't3://127.0.0.1:9913'
+# User must have rights to modify configuration (admin)
 user_file = "/path/to/userfile"
 key_file = "/path/to/keyfile"
 #This list of arguments is for demonstration and testing only, some of these I just made up.  This will break if you use it!
 new_arguments = "-Xms8192m -Xmx8g -XX:MaxPermSize=2048m -Dweblogic.diagnostics.DisableDiagnosticRuntimeControlService=true -DSomeargument -Dweblogic.debug.DebugClusterFragments=true -Dweblogic.debug.DebugClusterSomethingElse=true"
-
+    
 #This function takes a list of JVM arguments and converts it to a dictionary of key,value pairs with the dict key being the jvm argument name, and the value being a complete copy of the argument broken into key, separator, value
 def argdict ( arglist ):
     parsedargdict = {}
@@ -25,25 +26,43 @@ def argdict ( arglist ):
             if "-XX" in arg:
                 # If it's an XX with an =, we'll split at the =, otherwise we'll just add it with no value and pray like hell that it works.
                 if "=" in arg:
-                    key,value=arg.split("=")
-                    parsedargdict[key] = (key,'=',value)
+                    try:
+                        key,value=arg.split("=",1)
+                        parsedargdict[key] = (key,'=',value)
+                    except:
+                        print("\n")
+                        print('ERROR! Unable to break up ' + str(arg) + " into key/value pairs.  If you are attempting to modify this value, it likely will be incorrect.")
+                        print("\n")
+                        parsedargdict[arg] = None
                 else:
                     parsedargdict[arg] = None
             # Not an -XX so we can split at : safely. Hopefully. 
             else:
-                key,value=arg.split(":")
-                parsedargdict[key] = (key,':',value)
+                try:
+                    key,value=arg.split(":",1)
+                    parsedargdict[key] = (key,':',value)
+                except:
+                    print("\n")             
+                    print('ERROR! Unable to break up ' + str(arg) + " into key/value pairs.  If you are attempting to modify this value, it likely will be incorrect.")
+                    print("\n")
+                    parsedargdict[arg] = None 
         # Check for args delimited by =
         elif "=" in arg:
-            key,value=arg.split("=")
-            parsedargdict[key] = (key,'=',value)
-        # Check for args with numeric values but no delimiter like our old pal xmx.
-        elif re.match(r"(-[a-z]+)([0-9]+[g|m|k])", arg, re.I):
-            nondelimited_match = re.match(r"(-[a-z]+)([0-9]+[g|m|k])", arg, re.I)
+            try:
+                key,value=arg.split("=",1)
+                parsedargdict[key] = (key,'=',value)
+            except:
+                print("\n")             
+                print('ERROR! Unable to break up ' + str(arg) + " into key/value pairs.  If you are attempting to modify this value, it likely will be incorrect.")
+                print("\n")
+                parsedargdict[arg] = None 
+        # Check for args with numeric values but no delimiter like our old pal xmx. Note the sloppy .* after the number part of the regex; that'll grab anything so be careful.
+        elif re.match(r"(-[a-z]+)([0-9]+.*)", arg, re.I):
+            nondelimited_match = re.match(r"(-[a-z]+)([0-9]+.*)", arg, re.I)
             if nondelimited_match:
                 nond_arg=nondelimited_match.groups()
                 parsedargdict[nond_arg[0]] = (nond_arg[0],"",nond_arg[1])
-        # I'm out of ideas so we'll just add the arg with a key of "none".
+        # I'm out of ideas so we'll just add the arg with a key of "none". This will grab flags with no value, like -XX:-DisableExplicitGC.
         else:
             parsedargdict[arg] = None
     return parsedargdict
