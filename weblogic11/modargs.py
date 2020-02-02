@@ -16,7 +16,7 @@ key_file = "/home/weblogic/wladmin_key.secure"
 
 
 #This list of arguments is for demonstration and testing only, some of these I just made up.  This will break if you use it. If you only want to delete args, leave new_arguments blank.
-new_arguments = "-Xms8192m -Xmx8g -XX:MaxPermSize=2048m -Dweblogic.diagnostics.DisableDiagnosticRuntimeControlService=true -DSomeargument -Dweblogic.debug.DebugClusterFragments=true -Dweblogic.debug.DebugClusterSomethingElse=true -XX:FlightRecorderOptions=defaultrecording=true,disk=true,repository=/opt/app/weblogic/atg/domains/darden_production/servers/Darden-app-203/logs/flightrecords/,maxage=3h,dumponexit=true,dumponexitpath=/opt/app/weblogic/atg/domains/darden_production/servers/Darden-app-203/logs/flightrecords/"
+new_arguments = "-Xms8192m -Xmx8g -XX:MaxPermSize=2048m -Dweblogic.diagnostics.DisableDiagnosticRuntimeControlService=true -DSomeargument -Dweblogic.debug.DebugClusterFragments=true -Dweblogic.debug.DebugClusterSomethingElse=true -XX:FlightRecorderOptions=defaultrecording=true,disk=true,repository=/some/path,maxage=3h,dumponexit=true,dumponexitpath=/some/path"
 #new_arguments = ""
 
 # These are arguments you want to remove from the environment.  You can leave this blank if you're only adding arguments.  The functionality to nuke arguments based on the key only, although you could use the value if you wanted.
